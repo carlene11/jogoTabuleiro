@@ -2,13 +2,18 @@ package chess.pieces;
 
 import boardGame.Board;
 import boardGame.Position;
+import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.Color;
 
 public class King extends ChessPiece{
 
-	public King(Board board, Color color) {
+	private ChessMatch chessMatch;
+	
+	public King(Board board, Color color, ChessMatch chessMatch) {
 		super(board, color);
+		this.chessMatch = chessMatch;
+		
 		
 	}
 	
@@ -23,6 +28,13 @@ public class King extends ChessPiece{
 	return p == null || p.getColor() != getColor();
 		
 	}
+	
+	private boolean testRookCastling(Position position) {
+		ChessPiece p = (ChessPiece)getBoard().piece(position); 
+		return p !=null && p instanceof Rook && p.getColor() == getColor() && p.getMoveCount() == 0; // significa que tem um torre apta para jogada rook
+	}
+	
+	
 	
 	@Override
 	public boolean[][] possibleMoves() {
@@ -70,6 +82,34 @@ public class King extends ChessPiece{
 			mat[p.getRow()][p.getColumn()] = true;
 		}
 				
+		// #specialmove castling
+		if(getMoveCount() == 0 && !chessMatch.getCheck()) {
+			// #specialmove castling kingside rook - rook pequeno
+			Position posT1 = new Position(position.getRow(), position.getColumn() + 3);//posicao possivel da torre do rei
+			if(testRookCastling(posT1)) {
+				Position p1 = new Position(position.getRow(), position.getColumn() + 1);//casa a direita
+				Position p2 = new Position(position.getRow(), position.getColumn() + 2);// 2 casas a direita
+				if(getBoard().piece(p1)==null && getBoard().piece(p2)==null){
+					//posso fazer o roque
+					mat[position.getRow()][position.getColumn()+2] = true;
+					
+				}
+				
+			}
+			// #specialmove castling queenside rook - roque grande
+			Position posT2 = new Position(position.getRow(), position.getColumn() -4);//posicao possivel da torre do rei
+			if(testRookCastling(posT2)) {
+				Position p1 = new Position(position.getRow(), position.getColumn() -1);//casa a esquerda
+				Position p2 = new Position(position.getRow(), position.getColumn() -2);// 2 casas a esquerda
+				Position p3 = new Position(position.getRow(), position.getColumn() -3);// 3 casas a esquerda
+				if(getBoard().piece(p1)==null && getBoard().piece(p2)==null && getBoard().piece(p3) == null){
+					//posso fazer o roque
+					mat[position.getRow()][position.getColumn()-2] = true;
+								
+				}
+							
+			}
+		}
 		
 		
 		return mat;
